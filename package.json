@@ -1,5 +1,8 @@
 {
   "private": true,
+  "engines": {
+    "iojs": "3.3.x"
+  },
   "scripts": {
     "start": "./node_modules/forever/bin/forever index.js"
   },
