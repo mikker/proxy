@@ -4,21 +4,31 @@ var parseUrl = require('url').parse
 var server = http.createServer(function (req, res) {
   var query = parseUrl(req.url, true).query
 
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Request-Method', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200)
+    res.end()
+    return
+  }
+
   if (!query.u) return res.end('?u not provided')
 
   var proxyUrl = parseUrl(query.u)
 
-  var opts = {
+  var proxyReq = http.request({
     method: query.m || 'GET',
     host: proxyUrl.hostname,
     port: proxyUrl.protocol === 'https:' ? 443 : 80,
     path: proxyUrl.path
-  }
-
-  var proxyReq = http.request(opts, function (proxyRes) {
+  }, function (proxyRes) {
     proxyRes.pipe(res, {
       end: true
     })
+
     res.writeHead(proxyRes.statusCode, proxyRes.headers)
   })
 
