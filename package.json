@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "start": "./node_modules/forever/bin/forever index.js"
+  },
+  "dependencies": {
+    "forever": "^0.15.1"
+  }
+}
