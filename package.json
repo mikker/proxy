@@ -7,6 +7,7 @@
     "start": "./node_modules/forever/bin/forever index.js"
   },
   "dependencies": {
-    "forever": "^0.15.1"
+    "forever": "^0.15.1",
+    "morgan": "^1.6.1"
   }
 }

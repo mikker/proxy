@@ -1,39 +1,47 @@
 var http = require('http')
 var parseUrl = require('url').parse
+var logger = require('morgan')('tiny')
 
 var server = http.createServer(function (req, res) {
-  var query = parseUrl(req.url, true).query
+  logger(req, res, function (err) {
+    if (err) {
+      res.end('error')
+      return console.log(err)
+    }
 
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Request-Method', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET')
-  res.setHeader('Access-Control-Allow-Headers', '*')
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200)
-    res.end()
-    return
-  }
+    var query = parseUrl(req.url, true).query
 
-  if (!query.u) return res.end('?u not provided')
+    // CORS
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Request-Method', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET')
+    res.setHeader('Access-Control-Allow-Headers', '*')
+    if (req.method === 'OPTIONS') {
+      res.writeHead(200)
+      res.end()
+      return
+    }
 
-  var proxyUrl = parseUrl(query.u)
+    if (!query.u) return res.end('?u not provided')
 
-  var proxyReq = http.request({
-    method: query.m || 'GET',
-    host: proxyUrl.hostname,
-    port: proxyUrl.protocol === 'https:' ? 443 : 80,
-    path: proxyUrl.path
-  }, function (proxyRes) {
-    proxyRes.pipe(res, {
-      end: true
+    var proxyUrl = parseUrl(query.u)
+
+    var proxyReq = http.request({
+      method: query.m || 'GET',
+      host: proxyUrl.hostname,
+      port: proxyUrl.protocol === 'https:' ? 443 : 80,
+      path: proxyUrl.path
+    }, function (proxyRes) {
+      proxyRes.pipe(res, {
+        end: true
+      })
+
+      res.writeHead(proxyRes.statusCode, proxyRes.headers)
     })
 
-    res.writeHead(proxyRes.statusCode, proxyRes.headers)
-  })
-
-  req.pipe(proxyReq, {
-    end: true
+    req.pipe(proxyReq, {
+      end: true
+    })
   })
 })
 
